@@ -3,6 +3,7 @@
 <%
     String contextPath = request.getContextPath();
     List<String> errorMsgs = (List<String>) request.getAttribute("errorMsgs");
+    String blogId = request.getAttribute("blogId") == null ? "" : String.valueOf(request.getAttribute("blogId"));
 %>
 <!DOCTYPE html>
 <html lang="zh-Hant">
@@ -43,12 +44,12 @@
             </ul>
         <% } %>
 
-        <h2>查詢單筆 Blog</h2>
+        <h2>查詢單筆 Blog(9000~)</h2>
         <form method="post" action="<%= contextPath %>/blog/blog.do">
             <input type="hidden" name="action" value="getOne_For_Display">
             <div>
                 <label for="blog_id">Blog 編號</label>
-                <input id="blog_id" type="number" name="blog_id" min="1" required>
+                <input id="blog_id" type="number" name="blog_id" min="1" value="<%= blogId %>" required>
             </div>
             <button class="btn" type="submit">送出查詢</button>
         </form>

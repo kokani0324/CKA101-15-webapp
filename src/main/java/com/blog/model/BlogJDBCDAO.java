@@ -1,9 +1,15 @@
 package com.blog.model;
 
-import java.util.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
-public class BlogJDBCDAO implements BlogDAO_interface { // 實作介面
+public class BlogJDBCDAO implements BlogDAO_interface {
 
 	String driver = "com.mysql.cj.jdbc.Driver";
 	String url = "jdbc:mysql://localhost:3306/farmily?serverTimezone=Asia/Taipei";
@@ -31,12 +37,14 @@ public class BlogJDBCDAO implements BlogDAO_interface { // 實作介面
 		PreparedStatement pstmt = null;
 
 		try {
-			Class.forName(driver); // 載入上面寫的 driver
-			con = DriverManager.getConnection(url, userid, passwd); // 建立連線
+			Class.forName(driver);
+			con = DriverManager.getConnection(url, userid, passwd);
 
 			pstmt = con.prepareStatement(INSERT_STMT);
 
 			pstmt.setString(1, blogVO.getBlogTitle());
+
+			// userId 與 farmerId 在不同來源表單可能為空，因此用 setNull 寫入資料庫 NULL。
 			if (blogVO.getUserId() == null) {
 				pstmt.setNull(2, Types.INTEGER);
 			} else {
@@ -48,6 +56,7 @@ public class BlogJDBCDAO implements BlogDAO_interface { // 實作介面
 			} else {
 				pstmt.setInt(3, blogVO.getFarmerId());
 			}
+
 			pstmt.setInt(4, blogVO.getBlogTypeId());
 			pstmt.setInt(5, blogVO.getProductId());
 			pstmt.setString(6, blogVO.getBlogContent());
@@ -85,8 +94,8 @@ public class BlogJDBCDAO implements BlogDAO_interface { // 實作介面
 		PreparedStatement pstmt = null;
 
 		try {
-			Class.forName(driver); // 載入上面寫的 driver
-			con = DriverManager.getConnection(url, userid, passwd); // 建立連線
+			Class.forName(driver);
+			con = DriverManager.getConnection(url, userid, passwd);
 
 			pstmt = con.prepareStatement(UPDATE);
 
@@ -129,8 +138,8 @@ public class BlogJDBCDAO implements BlogDAO_interface { // 實作介面
 		PreparedStatement pstmt = null;
 
 		try {
-			Class.forName(driver); // 載入上面寫的 driver
-			con = DriverManager.getConnection(url, userid, passwd); // 建立連線
+			Class.forName(driver);
+			con = DriverManager.getConnection(url, userid, passwd);
 
 			pstmt = con.prepareStatement(DELETE);
 			pstmt.setInt(1, blogId);
@@ -160,12 +169,11 @@ public class BlogJDBCDAO implements BlogDAO_interface { // 實作介面
 
 	@Override
 	public BlogVO findByPrimaryKey(Integer blogId) {
-		BlogVO blogVO = null; // 主要是從資料庫拿出來 byte array 轉變成字串後，資料是零散的，
-		// 我們 new 出一個物件把資料統一封裝進去，確保離開 DAO 層也保有嚴格型別定義的單一記憶體區塊
+		BlogVO blogVO = null;
 
-		Connection con = null; // JVM 和 MYSQL 的連線
-		PreparedStatement pstmt = null; // 存在資料庫伺服器記憶體中，預先編譯的 SQL 執行計畫
-		ResultSet rs = null; // 指向資料庫記憶體中結果的某個特定位置，會以一批一批的行式呈現出來，例如一次 10 項
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 
 		try {
 			Class.forName(driver);
@@ -174,10 +182,9 @@ public class BlogJDBCDAO implements BlogDAO_interface { // 實作介面
 			pstmt = con.prepareStatement(GET_ONE_STMT);
 			pstmt.setInt(1, blogId);
 
-			rs = pstmt.executeQuery(); // 查詢時會把符合條件的資料放在伺服器的快取中，
-			// executeQuery() 就是用來向資料庫請求這批資料，
-			// 而回傳的 ResultSet(rs) 並不是資料本身，而是一個資料游標 Data Cursor，指標指向查詢結果的開頭
+			rs = pstmt.executeQuery();
 
+			// ResultSet 游標移到第一筆資料後，再把資料庫欄位轉成 BlogVO。
 			if (rs.next()) {
 				blogVO = new BlogVO();
 
@@ -240,6 +247,7 @@ public class BlogJDBCDAO implements BlogDAO_interface { // 實作介面
 			pstmt = con.prepareStatement(GET_ALL_STMT);
 			rs = pstmt.executeQuery();
 
+			// 逐筆讀取查詢結果，轉成 BlogVO 後放進 List 回傳給 Service。
 			while (rs.next()) {
 				blogVO = new BlogVO();
 
@@ -289,7 +297,7 @@ public class BlogJDBCDAO implements BlogDAO_interface { // 實作介面
 	public static void main(String[] args) {
 		BlogJDBCDAO dao = new BlogJDBCDAO();
 
-		// 查詢
+		// 簡易測試：查詢全部文章並印出欄位內容。
 		List<BlogVO> list = dao.getAll();
 
 		for (BlogVO blogVO : list) {

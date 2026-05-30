@@ -12,19 +12,20 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "blog")
-public class BlogVO implements java.io.Serializable { // 對應 Blog
+public class BlogVO implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1L; //Java class 的版本控制號碼
+	private static final long serialVersionUID = 1L;
 
+	// 文章主鍵，由資料庫自動遞增產生。
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "blog_id", updatable = false)
-	private Integer blogId; // 不能有底線，代價是處理表單接收、JSON 轉換、JSP 渲染以及資料庫存取時，
-	// 會不斷遭遇到框架底層機制因為「找不到標準方法名稱」而引發的各種詭異 Bug。
+	private Integer blogId;
 
 	@Column(name = "blog_title")
 	private String blogTitle;
 
+	// 會員文章可使用 userId；農夫日誌可搭配 farmerId 使用。
 	@Column(name = "user_id")
 	private Integer userId;
 
@@ -40,8 +41,9 @@ public class BlogVO implements java.io.Serializable { // 對應 Blog
 	@Column(name = "blog_content")
 	private String blogContent;
 
+	// 圖片以 BLOB 形式存進資料庫，Servlet 讀出後直接輸出成 image/jpeg。
 	@Lob
-	@Column(name = "blog_img")	
+	@Column(name = "blog_img")
 	private byte[] blogImg;
 
 	@Column(name = "blog_like")

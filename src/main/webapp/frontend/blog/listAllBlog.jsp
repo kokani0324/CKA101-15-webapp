@@ -6,6 +6,7 @@
     String contextPath = request.getContextPath();
     List<String> errorMsgs = (List<String>) request.getAttribute("errorMsgs");
     List<BlogVO> blogList = (List<BlogVO>) request.getAttribute("blogList");
+    List<BlogVO> list = blogList == null ? new ArrayList<BlogVO>() : blogList;
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 %>
 <!DOCTYPE html>
@@ -28,6 +29,11 @@
         .actions form { margin: 0; }
         .errors { margin: 0 0 18px; padding: 12px 16px; border-radius: 6px; background: #ffe9e7; color: #9a2c23; }
         .empty { background: #fff; border: 1px solid #d9dfd3; border-radius: 8px; padding: 24px; }
+        .page-summary { display: flex; gap: 16px; align-items: center; margin: 12px 0; color: #40513b; }
+        .pager { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 16px 0; }
+        .pager a { padding: 6px 10px; border: 1px solid #bfc8b8; border-radius: 6px; background: #fff; text-decoration: none; }
+        .pager form { display: flex; gap: 8px; align-items: center; margin: 0; }
+        .pager select, .pager input { padding: 6px 8px; border: 1px solid #bfc8b8; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -48,9 +54,10 @@
         </ul>
     <% } %>
 
-    <% if (blogList == null || blogList.isEmpty()) { %>
+    <% if (list.isEmpty()) { %>
         <div class="empty">目前沒有文章資料。</div>
     <% } else { %>
+        <%@ include file="page1.file" %>
         <table>
             <thead>
             <tr>
@@ -67,7 +74,10 @@
             </tr>
             </thead>
             <tbody>
-            <% for (BlogVO blogVO : blogList) { %>
+            <%
+            for (int i = pageIndex; i < pageIndex + rowsPerPage && i < list.size(); i++) {
+                BlogVO blogVO = list.get(i);
+            %>
                 <tr>
                     <td><%= blogVO.getBlogId() %></td>
                     <td><%= blogVO.getBlogTitle() %></td>
@@ -101,6 +111,7 @@
             <% } %>
             </tbody>
         </table>
+        <%@ include file="page2.file" %>
     <% } %>
 </main>
 </body>

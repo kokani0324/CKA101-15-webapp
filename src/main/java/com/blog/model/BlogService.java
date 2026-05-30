@@ -8,15 +8,15 @@ public class BlogService {
 
 	public BlogService() {
 
-		// JDBC 版
+		// 目前預設使用 JDBC DAO；若要改用 Hibernate，可切換成 BlogHibernateDAO。
 		dao = new BlogJDBCDAO();
 
-		// Hibernate 版
+		// Hibernate 版本
 		// dao = new BlogHibernateDAO();
 	}
 
 	public BlogVO addBlog(String blogTitle, Integer userId, Integer farmerId, Integer blogTypeId,
-	                      Integer productId, String blogContent, byte[] blogImg, String blogStatus) {
+			Integer productId, String blogContent, byte[] blogImg, String blogStatus) {
 
 		BlogVO blogVO = new BlogVO();
 
@@ -28,8 +28,9 @@ public class BlogService {
 		blogVO.setBlogContent(blogContent);
 		blogVO.setBlogImg(blogImg);
 
-		blogVO.setBlogLike(0); // 新文章按讚數預設為 0
-		blogVO.setBlogTime(new java.sql.Timestamp(System.currentTimeMillis())); // 抓取現在當下的時間
+		// 新增文章時，讚數從 0 開始，建立時間使用目前系統時間。
+		blogVO.setBlogLike(0);
+		blogVO.setBlogTime(new java.sql.Timestamp(System.currentTimeMillis()));
 
 		blogVO.setBlogStatus(blogStatus);
 
@@ -39,8 +40,8 @@ public class BlogService {
 	}
 
 	public BlogVO updateBlog(String blogTitle, Integer userId, Integer farmerId, Integer blogTypeId,
-	                         Integer productId, String blogContent, byte[] blogImg,
-	                         String blogStatus, Integer blogId) {
+			Integer productId, String blogContent, byte[] blogImg,
+			String blogStatus, Integer blogId) {
 
 		BlogVO blogVO = new BlogVO();
 
@@ -54,7 +55,7 @@ public class BlogService {
 		blogVO.setBlogImg(blogImg);
 		blogVO.setBlogStatus(blogStatus);
 
-		// 保留原本按讚數與時間
+		// 修改文章內容時保留原本的讚數與發文時間，避免被表單更新流程覆蓋。
 		BlogVO oldBlogVO = dao.findByPrimaryKey(blogId);
 
 		if (oldBlogVO != null) {

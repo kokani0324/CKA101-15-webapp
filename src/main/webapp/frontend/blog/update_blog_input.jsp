@@ -1,10 +1,15 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*" %>
+<%@ page import="java.sql.*" %>
 <%@ page import="com.blog.model.BlogVO" %>
 <%
     String contextPath = request.getContextPath();
     List<String> errorMsgs = (List<String>) request.getAttribute("errorMsgs");
     BlogVO blogVO = (BlogVO) request.getAttribute("blogVO");
+    String driver = "com.mysql.cj.jdbc.Driver";
+    String url = "jdbc:mysql://localhost:3306/farmily?serverTimezone=Asia/Taipei";
+    String userid = "root";
+    String passwd = "123456";
 %>
 <!DOCTYPE html>
 <html lang="zh-Hant">
@@ -54,11 +59,63 @@
             <div class="grid">
                 <div>
                     <label for="user_id">會員編號</label>
-                    <input id="user_id" type="number" name="user_id" value="<%= blogVO.getUserId() == null ? "" : blogVO.getUserId() %>" min="1" required>
+                    <select id="user_id" name="user_id" required>
+                        <option value="">-- 請選擇會員 --</option>
+                        <%
+                        try {
+                            Class.forName(driver);
+                            try (Connection con = DriverManager.getConnection(url, userid, passwd);
+                                 PreparedStatement pstmt = con.prepareStatement(
+                                         "SELECT user_id, user_name, user_nickname FROM `user` ORDER BY user_id");
+                                 ResultSet rs = pstmt.executeQuery()) {
+
+                                while (rs.next()) {
+                                    Integer userId = rs.getInt("user_id");
+                                    String userName = rs.getString("user_name");
+                                    String userNickname = rs.getString("user_nickname");
+                                    String showName = userName != null && userName.trim().length() > 0 ? userName : userNickname;
+                                    String selected = userId.equals(blogVO.getUserId()) ? "selected" : "";
+                        %>
+                        <option value="<%= userId %>" <%= selected %>><%= userId %> - <%= showName == null ? "" : showName %></option>
+                        <%
+                                }
+                            }
+                        } catch (Exception e) {
+                        %>
+                        <option value="" disabled>會員資料讀取失敗</option>
+                        <%
+                        }
+                        %>
+                    </select>
                 </div>
                 <div>
                     <label for="farmer_id">農夫編號</label>
-                    <input id="farmer_id" type="number" name="farmer_id" value="<%= blogVO.getFarmerId() == null ? "" : blogVO.getFarmerId() %>" min="1" required>
+                    <select id="farmer_id" name="farmer_id" required>
+                        <option value="">-- 請選擇農夫 --</option>
+                        <%
+                        try {
+                            Class.forName(driver);
+                            try (Connection con = DriverManager.getConnection(url, userid, passwd);
+                                 PreparedStatement pstmt = con.prepareStatement(
+                                         "SELECT farmer_id, farm_name FROM farmer ORDER BY farmer_id");
+                                 ResultSet rs = pstmt.executeQuery()) {
+
+                                while (rs.next()) {
+                                    Integer farmerId = rs.getInt("farmer_id");
+                                    String farmName = rs.getString("farm_name");
+                                    String selected = farmerId.equals(blogVO.getFarmerId()) ? "selected" : "";
+                        %>
+                        <option value="<%= farmerId %>" <%= selected %>><%= farmerId %> - <%= farmName == null ? "" : farmName %></option>
+                        <%
+                                }
+                            }
+                        } catch (Exception e) {
+                        %>
+                        <option value="" disabled>農夫資料讀取失敗</option>
+                        <%
+                        }
+                        %>
+                    </select>
                 </div>
                 <div>
                     <label for="blog_type_id">文章分類編號</label>
