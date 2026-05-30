@@ -20,6 +20,20 @@ public class Blogservlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	private static final String MSG_BLOG_ID_REQUIRED = "\u8acb\u8f38\u5165 Blog \u7de8\u865f";
+	private static final String MSG_BLOG_NOT_FOUND = "\u67e5\u7121\u6b64 Blog \u7de8\u865f\uff1a";
+	private static final String MSG_TITLE_REQUIRED = "\u6a19\u984c\u8acb\u52ff\u7a7a\u767d";
+	private static final String MSG_CONTENT_REQUIRED = "\u6587\u7ae0\u5167\u5bb9\u8acb\u52ff\u7a7a\u767d";
+	private static final String MSG_STATUS_REQUIRED = "\u6587\u7ae0\u72c0\u614b\u8acb\u52ff\u7a7a\u767d";
+	private static final String MSG_USER_ID_FORMAT = "\u6703\u54e1\u7de8\u865f\u683c\u5f0f\u932f\u8aa4";
+	private static final String MSG_FARMER_ID_FORMAT = "\u5c0f\u8fb2\u7de8\u865f\u683c\u5f0f\u932f\u8aa4";
+	private static final String MSG_OWNER_REQUIRED = "\u6703\u54e1\u548c\u5c0f\u8fb2\u4e0d\u80fd\u540c\u6642\u7a7a\u767d";
+	private static final String MSG_BLOG_TYPE_REQUIRED = "\u8acb\u8f38\u5165\u6587\u7ae0\u5206\u985e\u7de8\u865f";
+	private static final String MSG_PRODUCT_REQUIRED = "\u8acb\u8f38\u5165\u5546\u54c1\u7de8\u865f";
+	private static final String MSG_NUMBER_REQUIRED = "\uff0c\u8acb\u8f38\u5165\u6578\u5b57";
+	private static final String MSG_INSERT_FAILED = "\u65b0\u589e\u5931\u6557\uff1a\u8acb\u78ba\u8a8d\u6703\u54e1\u3001\u5c0f\u8fb2\u3001\u6587\u7ae0\u5206\u985e\u8207\u5546\u54c1\u7de8\u865f\u662f\u5426\u5b58\u5728";
+	private static final String MSG_UPDATE_FAILED = "\u4fee\u6539\u5931\u6557\uff1a\u8acb\u78ba\u8a8d\u6703\u54e1\u3001\u5c0f\u8fb2\u3001\u6587\u7ae0\u5206\u985e\u8207\u5546\u54c1\u7de8\u865f\u662f\u5426\u5b58\u5728";
+
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse res)
 			throws ServletException, IOException {
@@ -35,7 +49,6 @@ public class Blogservlet extends HttpServlet {
 
 		String action = req.getParameter("action");
 
-		// 依 blog_id 讀取圖片，直接把圖片二進位資料回傳給瀏覽器。
 		if ("getImage".equals(action)) {
 			Integer blogId = Integer.valueOf(req.getParameter("blog_id"));
 
@@ -52,25 +65,18 @@ public class Blogservlet extends HttpServlet {
 			return;
 		}
 
-		// 查詢全部文章。
 		if ("getAll".equals(action)) {
 			forwardBlogList(req, res);
 			return;
 		}
 
-		// 查詢單一文章並顯示明細頁。
 		if ("getOne_For_Display".equals(action)) {
 			List<String> errorMsgs = new LinkedList<String>();
 			req.setAttribute("errorMsgs", errorMsgs);
 			req.setAttribute("blogId", req.getParameter("blog_id"));
 
-			Integer blogId = parseRequiredInteger(req.getParameter("blog_id"), "請輸入 Blog 編號", errorMsgs);
-			//從JSP拿到訊息 eeq.getParmeter("blog_id") ，先給parseRequiredInteger檢查
-			//parseRequiredInteger 會檢查  有沒有空白  能不能轉成整數，如果有錯就會吧錯誤訊息加進 errorMsgs
-			//parseRequiredInteger(接受前端傳來的參數名， 錯誤時顯示的errorMsg 前端， 用來收集錯誤訊息的 List)
-			//最後都檢查正常 Integer blogId = "2" 就會變成 Integer blogId = 2
-			if (!errorMsgs.isEmpty()) { //isEmpty 是不是空的 前面加!反轉，變成如果錯誤清單不是空的，
-				//代表前面有錯誤
+			Integer blogId = parseRequiredInteger(req.getParameter("blog_id"), MSG_BLOG_ID_REQUIRED, errorMsgs);
+			if (!errorMsgs.isEmpty()) {
 				forward(req, res, "/frontend/blog/select_page.jsp");
 				return;
 			}
@@ -78,7 +84,7 @@ public class Blogservlet extends HttpServlet {
 			BlogService blogSvc = new BlogService();
 			BlogVO blogVO = blogSvc.getOneBlog(blogId);
 			if (blogVO == null) {
-				errorMsgs.add("查無此 Blog 編號：" + blogId);
+				errorMsgs.add(MSG_BLOG_NOT_FOUND + blogId);
 			}
 
 			if (!errorMsgs.isEmpty()) {
@@ -91,12 +97,11 @@ public class Blogservlet extends HttpServlet {
 			return;
 		}
 
-		// 進入修改頁前，先用主鍵查出原本資料。
 		if ("getOne_For_Update".equals(action)) {
 			List<String> errorMsgs = new LinkedList<String>();
 			req.setAttribute("errorMsgs", errorMsgs);
 
-			Integer blogId = parseRequiredInteger(req.getParameter("blog_id"), "請輸入 Blog 編號", errorMsgs);
+			Integer blogId = parseRequiredInteger(req.getParameter("blog_id"), MSG_BLOG_ID_REQUIRED, errorMsgs);
 			if (!errorMsgs.isEmpty()) {
 				forwardBlogList(req, res);
 				return;
@@ -105,7 +110,7 @@ public class Blogservlet extends HttpServlet {
 			BlogService blogSvc = new BlogService();
 			BlogVO blogVO = blogSvc.getOneBlog(blogId);
 			if (blogVO == null) {
-				errorMsgs.add("查無此 Blog 編號：" + blogId);
+				errorMsgs.add(MSG_BLOG_NOT_FOUND + blogId);
 				forwardBlogList(req, res);
 				return;
 			}
@@ -115,7 +120,6 @@ public class Blogservlet extends HttpServlet {
 			return;
 		}
 
-		// 修改文章。
 		if ("update".equals(action)) {
 			List<String> errorMsgs = new LinkedList<String>();
 			req.setAttribute("errorMsgs", errorMsgs);
@@ -123,19 +127,14 @@ public class Blogservlet extends HttpServlet {
 			BlogVO blogVO = buildBlogFromRequest(req, true, errorMsgs);
 
 			BlogService blogSvc = new BlogService();
-
-			// 若使用者有重新上傳圖片，就讀取新的圖片內容。
 			byte[] blogImg = getImageBytes(req, "blog_img");
 
-			// 若沒有重新上傳圖片，沿用資料庫中原本的圖片，避免更新時把圖片清空。
 			if (blogImg == null) {
 				BlogVO oldBlogVO = blogSvc.getOneBlog(blogVO.getBlogId());
-
 				if (oldBlogVO != null) {
 					blogImg = oldBlogVO.getBlogImg();
 				}
 			}
-
 			blogVO.setBlogImg(blogImg);
 
 			if (!errorMsgs.isEmpty()) {
@@ -156,7 +155,7 @@ public class Blogservlet extends HttpServlet {
 						blogVO.getBlogStatus(),
 						blogVO.getBlogId());
 			} catch (RuntimeException e) {
-				errorMsgs.add("修改失敗：請確認會員編號、農夫編號、商品編號與文章分類編號是否存在。");
+				errorMsgs.add(MSG_UPDATE_FAILED);
 				req.setAttribute("blogVO", blogVO);
 				forward(req, res, "/frontend/blog/update_blog_input.jsp");
 				return;
@@ -167,26 +166,17 @@ public class Blogservlet extends HttpServlet {
 			return;
 		}
 
-		// 新增文章。
 		if ("insert".equals(action)) {
-			List<String> errorMsgs = new LinkedList<String>(); // 建立一個(字串)錯誤訊息的陣列
+			List<String> errorMsgs = new LinkedList<String>();
 			req.setAttribute("errorMsgs", errorMsgs);
 
 			BlogVO blogVO = buildBlogFromRequest(req, false, errorMsgs);
-
 			byte[] blogImg = getImageBytes(req, "blog_img");
 			blogVO.setBlogImg(blogImg);
 
 			if (!errorMsgs.isEmpty()) {
 				req.setAttribute("blogVO", blogVO);
-
-				// 依來源頁面回到對應的新增表單，保留使用者剛剛輸入的資料。
-				String source = req.getParameter("source");
-				if ("farmer".equals(source)) {
-					forward(req, res, "/farmer/blog/addFarmDiary.jsp");
-				} else {
-					forward(req, res, "/frontend/blog/addBlog.jsp");
-				}
+				forwardInsertForm(req, res);
 				return;
 			}
 
@@ -202,14 +192,9 @@ public class Blogservlet extends HttpServlet {
 						blogImg,
 						blogVO.getBlogStatus());
 			} catch (RuntimeException e) {
-				errorMsgs.add("新增失敗：請確認會員編號、農夫編號、商品編號與文章分類編號是否存在。");
+				errorMsgs.add(MSG_INSERT_FAILED);
 				req.setAttribute("blogVO", blogVO);
-				String source = req.getParameter("source");
-				if ("farmer".equals(source)) {
-					forward(req, res, "/farmer/blog/addFarmDiary.jsp");
-				} else {
-					forward(req, res, "/frontend/blog/addBlog.jsp");
-				}
+				forwardInsertForm(req, res);
 				return;
 			}
 
@@ -217,12 +202,11 @@ public class Blogservlet extends HttpServlet {
 			return;
 		}
 
-		// 刪除文章後回到列表頁。
 		if ("delete".equals(action)) {
 			List<String> errorMsgs = new LinkedList<String>();
 			req.setAttribute("errorMsgs", errorMsgs);
 
-			Integer blogId = parseRequiredInteger(req.getParameter("blog_id"), "請輸入 Blog 編號", errorMsgs);
+			Integer blogId = parseRequiredInteger(req.getParameter("blog_id"), MSG_BLOG_ID_REQUIRED, errorMsgs);
 			if (errorMsgs.isEmpty()) {
 				BlogService blogSvc = new BlogService();
 				blogSvc.deleteBlog(blogId);
@@ -235,12 +219,11 @@ public class Blogservlet extends HttpServlet {
 		forward(req, res, "/frontend/blog/select_page.jsp");
 	}
 
-	// 將 request 參數集中轉成 BlogVO，讓新增與修改共用欄位驗證邏輯。
 	private BlogVO buildBlogFromRequest(HttpServletRequest req, boolean includeBlogId, List<String> errorMsgs) {
 		BlogVO blogVO = new BlogVO();
 
 		if (includeBlogId) {
-			blogVO.setBlogId(parseRequiredInteger(req.getParameter("blog_id"), "請輸入 Blog 編號", errorMsgs));
+			blogVO.setBlogId(parseRequiredInteger(req.getParameter("blog_id"), MSG_BLOG_ID_REQUIRED, errorMsgs));
 		}
 
 		String blogTitle = trim(req.getParameter("blog_title"));
@@ -248,29 +231,25 @@ public class Blogservlet extends HttpServlet {
 		String blogStatus = trim(req.getParameter("blog_status"));
 
 		if (blogTitle.length() == 0) {
-			errorMsgs.add("標題請勿空白");
+			errorMsgs.add(MSG_TITLE_REQUIRED);
 		}
 		if (blogContent.length() == 0) {
-			errorMsgs.add("文章內容請勿空白");
+			errorMsgs.add(MSG_CONTENT_REQUIRED);
 		}
 		if (blogStatus.length() == 0) {
-			errorMsgs.add("文章狀態請勿空白");
+			errorMsgs.add(MSG_STATUS_REQUIRED);
 		}
 
 		blogVO.setBlogTitle(blogTitle);
 		blogVO.setBlogContent(blogContent);
 		blogVO.setBlogStatus(blogStatus);
-
-		if (includeBlogId) {
-			blogVO.setUserId(parseRequiredInteger(req.getParameter("user_id"), "請輸入會員編號", errorMsgs));
-			blogVO.setFarmerId(parseRequiredInteger(req.getParameter("farmer_id"), "請輸入農夫編號", errorMsgs));
-		} else {
-			blogVO.setUserId(parseOptionalInteger(req.getParameter("user_id"), "會員編號只能輸入數字", errorMsgs));
-			blogVO.setFarmerId(parseOptionalInteger(req.getParameter("farmer_id"), "農夫編號只能輸入數字", errorMsgs));
+		blogVO.setUserId(parseOptionalInteger(req.getParameter("user_id"), MSG_USER_ID_FORMAT, errorMsgs));
+		blogVO.setFarmerId(parseOptionalInteger(req.getParameter("farmer_id"), MSG_FARMER_ID_FORMAT, errorMsgs));
+		if (blogVO.getUserId() == null && blogVO.getFarmerId() == null) {
+			errorMsgs.add(MSG_OWNER_REQUIRED);
 		}
-
-		blogVO.setBlogTypeId(parseRequiredInteger(req.getParameter("blog_type_id"), "請輸入文章分類編號", errorMsgs));
-		blogVO.setProductId(parseRequiredInteger(req.getParameter("product_id"), "請輸入商品編號", errorMsgs));
+		blogVO.setBlogTypeId(parseRequiredInteger(req.getParameter("blog_type_id"), MSG_BLOG_TYPE_REQUIRED, errorMsgs));
+		blogVO.setProductId(parseRequiredInteger(req.getParameter("product_id"), MSG_PRODUCT_REQUIRED, errorMsgs));
 
 		return blogVO;
 	}
@@ -285,7 +264,7 @@ public class Blogservlet extends HttpServlet {
 		try {
 			return Integer.valueOf(trimmedValue);
 		} catch (NumberFormatException e) {
-			errorMsgs.add(blankMessage + "，且只能輸入數字");
+			errorMsgs.add(blankMessage + MSG_NUMBER_REQUIRED);
 			return null;
 		}
 	}
@@ -315,13 +294,22 @@ public class Blogservlet extends HttpServlet {
 		forward(req, res, "/frontend/blog/listAllBlog.jsp");
 	}
 
+	private void forwardInsertForm(HttpServletRequest req, HttpServletResponse res)
+			throws ServletException, IOException {
+		String source = req.getParameter("source");
+		if ("farmer".equals(source)) {
+			forward(req, res, "/farmer/blog/addFarmDiary.jsp");
+		} else {
+			forward(req, res, "/frontend/blog/addBlog.jsp");
+		}
+	}
+
 	private void forward(HttpServletRequest req, HttpServletResponse res, String url)
 			throws ServletException, IOException {
 		RequestDispatcher view = req.getRequestDispatcher(url);
 		view.forward(req, res);
 	}
 
-	// 讀取 multipart/form-data 上傳的圖片；未選檔時回傳 null。
 	private byte[] getImageBytes(HttpServletRequest req, String partName) throws IOException, ServletException {
 		Part part = req.getPart(partName);
 

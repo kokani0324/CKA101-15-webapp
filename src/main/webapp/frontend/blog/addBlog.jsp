@@ -2,6 +2,8 @@
 <%@ page import="java.util.*"%>
 <%@ page import="java.sql.*"%>
 <%@ page import="com.blog.model.BlogVO"%>
+<%@ page import="com.blog.model.BlogService" %>
+<%@ page import="com.blog.model.UserVO" %>
 <%!
 
 %><%
@@ -108,7 +110,7 @@ textarea {
 		<h1>新增 Blog</h1>
 
 		<form method="post" action="<%=contextPath%>/blog/blog.do"
-			enctype="multipart/form-data">
+			enctype="multipart/form-data" onsubmit="return validateBlogOwner(this);">
 			<input type="hidden" name="action" value="insert">
 
 			<%
@@ -140,29 +142,17 @@ textarea {
 					<select id="user_id" name="user_id">
 						<option value="">-- 請選擇會員 --</option>
 						<%
-						try {
-							Class.forName(driver);
-							try (Connection con = DriverManager.getConnection(url, userid, passwd);
-								 PreparedStatement pstmt = con.prepareStatement(
-										 "SELECT user_id, user_name, user_nickname FROM `user` ORDER BY user_id");
-								 ResultSet rs = pstmt.executeQuery()) {
+							BlogService blogSvc = new BlogService();
+							List<UserVO> userList = blogSvc.getAllUsers();
 
-								while (rs.next()) {
-									Integer userId = rs.getInt("user_id");
-									String userName = rs.getString("user_name");
-									String userNickname = rs.getString("user_nickname");
-									String showName = userName != null && userName.trim().length() > 0 ? userName : userNickname;
-									String selected = userId.equals(blogVO.getUserId()) ? "selected" : "";
+							for (UserVO userVO : userList) { //每拿出一個會員userVO出來，印出一個option
+								String selected = userVO.getUserId().equals(blogVO.getUserId()) ? "selected" : "" ;  //新增失敗回表單，blogVO 裡面可能還保留剛剛選過的會員
 						%>
-						<option value="<%=userId%>" <%=selected%>><%=userId%> - <%=showName == null ? "" : showName%></option>
+						<option value="<%=userVO.getUserId()%>" <%=selected%>><%=userVO.getUserId()%> - <%=userVO.getUserName()%></option>
+
 						<%
-								}
+
 							}
-						} catch (Exception e) {
-						%>
-						<option value="" disabled>會員資料讀取失敗</option>
-						<%
-						}
 						%>
 					</select>
 				</div>
@@ -279,5 +269,14 @@ textarea {
 			<button class="btn" type="submit">新增文章</button>
 		</form>
 	</main>
+	<script>
+	function validateBlogOwner(form) {
+		if (form.user_id.value === "" && form.farmer_id.value === "") {
+			alert("\u6703\u54e1\u548c\u5c0f\u8fb2\u4e0d\u80fd\u540c\u6642\u7a7a\u767d");
+			return false;
+		}
+		return true;
+	}
+	</script>
 </body>
 </html>

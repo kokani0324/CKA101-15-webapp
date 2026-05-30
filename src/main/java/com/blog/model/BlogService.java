@@ -59,7 +59,7 @@ public class BlogService {
 		BlogVO oldBlogVO = dao.findByPrimaryKey(blogId);
 
 		if (oldBlogVO != null) {
-			blogVO.setBlogLike(oldBlogVO.getBlogLike());
+			blogVO.setBlogLike(oldBlogVO.getBlogLike()); //拿舊資料的讚數
 			blogVO.setBlogTime(oldBlogVO.getBlogTime());
 		}
 
@@ -79,4 +79,13 @@ public class BlogService {
 	public List<BlogVO> getAll() {
 		return dao.getAll();
 	}
+
+	public List<UserVO> getAllUsers() {
+		return dao.getAllUsers();
+	}
+
+	public List<FarmerVO> getAllFarmers() {
+		return dao.getAllFarmers();
+	}
+
 }

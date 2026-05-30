@@ -2,6 +2,9 @@
 <%@ page import="java.util.*" %>
 <%@ page import="java.sql.*" %>
 <%@ page import="com.blog.model.BlogVO" %>
+<%@ page import="com.blog.model.BlogService" %>
+<%@ page import="com.blog.model.UserVO" %>
+<%@ page import="com.blog.model.FarmerVO" %>
 <%
     String contextPath = request.getContextPath();
     List<String> errorMsgs = (List<String>) request.getAttribute("errorMsgs");
@@ -39,7 +42,7 @@
     <% if (blogVO == null) { %>
         <div class="empty">沒有可修改的文章資料。</div>
     <% } else { %>
-        <form method="post" action="<%= contextPath %>/blog/blog.do">
+        <form method="post" action="<%= contextPath %>/blog/blog.do" enctype="multipart/form-data" onsubmit="return validateBlogOwner(this);">
             <input type="hidden" name="action" value="update">
             <input type="hidden" name="blog_id" value="<%= blogVO.getBlogId() %>">
 
@@ -59,56 +62,36 @@
             <div class="grid">
                 <div>
                     <label for="user_id">會員編號</label>
-                    <select id="user_id" name="user_id" required>
+                    <select id="user_id" name="user_id">
                         <option value="">-- 請選擇會員 --</option>
                         <%
-                        try {
-                            Class.forName(driver);
-                            try (Connection con = DriverManager.getConnection(url, userid, passwd);
-                                 PreparedStatement pstmt = con.prepareStatement(
-                                         "SELECT user_id, user_name, user_nickname FROM `user` ORDER BY user_id");
-                                 ResultSet rs = pstmt.executeQuery()) {
+                            BlogService blogSvc = new BlogService();
+                            List<UserVO> userList = blogSvc.getAllUsers();
 
-                                while (rs.next()) {
-                                    Integer userId = rs.getInt("user_id");
-                                    String userName = rs.getString("user_name");
-                                    String userNickname = rs.getString("user_nickname");
-                                    String showName = userName != null && userName.trim().length() > 0 ? userName : userNickname;
-                                    String selected = userId.equals(blogVO.getUserId()) ? "selected" : "";
+                            for (UserVO userVO : userList) { //每拿出一個會員userVO出來，印出一個option
+                                String selected = userVO.getUserId().equals(blogVO.getUserId()) ? "selected" : "" ;  //新增失敗回表單，blogVO 裡面可能還保留剛剛選過的會員
                         %>
-                        <option value="<%= userId %>" <%= selected %>><%= userId %> - <%= showName == null ? "" : showName %></option>
+                        <option value="<%=userVO.getUserId()%>" <%=selected%>><%=userVO.getUserId()%> - <%=userVO.getUserName()%></option>
                         <%
-                                }
                             }
-                        } catch (Exception e) {
-                        %>
-                        <option value="" disabled>會員資料讀取失敗</option>
-                        <%
-                        }
                         %>
                     </select>
                 </div>
                 <div>
                     <label for="farmer_id">農夫編號</label>
-                    <select id="farmer_id" name="farmer_id" required>
+                    <select id="farmer_id" name="farmer_id">
                         <option value="">-- 請選擇農夫 --</option>
                         <%
-                        try {
-                            Class.forName(driver);
-                            try (Connection con = DriverManager.getConnection(url, userid, passwd);
-                                 PreparedStatement pstmt = con.prepareStatement(
-                                         "SELECT farmer_id, farm_name FROM farmer ORDER BY farmer_id");
-                                 ResultSet rs = pstmt.executeQuery()) {
+                            try {
+                                List<FarmerVO> farmerList = blogSvc.getAllFarmers();
 
-                                while (rs.next()) {
-                                    Integer farmerId = rs.getInt("farmer_id");
-                                    String farmName = rs.getString("farm_name");
-                                    String selected = farmerId.equals(blogVO.getFarmerId()) ? "selected" : "";
+                            for (FarmerVO farmerVO : farmerList) {
+                                String selected = farmerVO.getFarmerId().equals(blogVO.getFarmerId()) ? "selected" : "";
                         %>
-                        <option value="<%= farmerId %>" <%= selected %>><%= farmerId %> - <%= farmName == null ? "" : farmName %></option>
+                        <option value="<%= farmerVO.getFarmerId() %>" <%= selected %>><%= farmerVO.getFarmerId() %> - <%= farmerVO.getFarmName() == null ? "" : farmerVO.getFarmName() %></option>
                         <%
                                 }
-                            }
+
                         } catch (Exception e) {
                         %>
                         <option value="" disabled>農夫資料讀取失敗</option>
@@ -140,9 +123,28 @@
                 <textarea id="blog_content" name="blog_content" required><%= blogVO.getBlogContent() == null ? "" : blogVO.getBlogContent() %></textarea>
             </div>
 
+            <div>
+                <label for="blog_img">文章圖片</label>
+                <% if (blogVO.getBlogImg() != null) { %>
+                    <div>
+                        <img src="<%= contextPath %>/blog/blog.do?action=getImage&blog_id=<%= blogVO.getBlogId() %>" alt="目前文章圖片" style="max-width: 220px; max-height: 160px; display: block; margin-bottom: 8px;">
+                    </div>
+                <% } %>
+                <input id="blog_img" type="file" name="blog_img" accept="image/*">
+            </div>
+
             <button class="btn" type="submit">儲存修改</button>
         </form>
     <% } %>
 </main>
+<script>
+function validateBlogOwner(form) {
+    if (form.user_id.value === "" && form.farmer_id.value === "") {
+        alert("\u6703\u54e1\u548c\u5c0f\u8fb2\u4e0d\u80fd\u540c\u6642\u7a7a\u767d");
+        return false;
+    }
+    return true;
+}
+</script>
 </body>
 </html>

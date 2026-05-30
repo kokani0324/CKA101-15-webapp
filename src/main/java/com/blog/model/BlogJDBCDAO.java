@@ -31,6 +31,13 @@ public class BlogJDBCDAO implements BlogDAO_interface {
 	private static final String GET_ALL_STMT =
 			"SELECT blog_id, blog_title, user_id, farmer_id, blog_type_id, product_id, blog_content, blog_img, blog_like, blog_time, blog_status FROM Blog ORDER BY blog_id";
 
+	private static final String GET_ALL_USERS_STMT =
+			"SELECT user_id, user_name FROM `user` ORDER BY user_id";
+
+	private static final String GET_ALL_FARMERS_STMT =
+			"SELECT farmer_id, farm_name FROM farmer ORDER BY farmer_id";
+
+
 	@Override
 	public void insert(BlogVO blogVO) {
 		Connection con = null;
@@ -100,8 +107,18 @@ public class BlogJDBCDAO implements BlogDAO_interface {
 			pstmt = con.prepareStatement(UPDATE);
 
 			pstmt.setString(1, blogVO.getBlogTitle());
-			pstmt.setInt(2, blogVO.getUserId());
-			pstmt.setInt(3, blogVO.getFarmerId());
+			if (blogVO.getUserId() == null) {
+				pstmt.setNull(2, Types.INTEGER);
+			} else {
+				pstmt.setInt(2, blogVO.getUserId());
+			}
+
+			if (blogVO.getFarmerId() == null) {
+				pstmt.setNull(3, Types.INTEGER);
+			} else {
+				pstmt.setInt(3, blogVO.getFarmerId());
+			}
+
 			pstmt.setInt(4, blogVO.getBlogTypeId());
 			pstmt.setInt(5, blogVO.getProductId());
 			pstmt.setString(6, blogVO.getBlogContent());
@@ -293,6 +310,106 @@ public class BlogJDBCDAO implements BlogDAO_interface {
 
 		return list;
 	}
+	@Override
+	public List<UserVO> getAllUsers() {
+		List<UserVO> list = new ArrayList<UserVO>();
+
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+
+
+		try{
+			Class.forName(driver);
+			con = DriverManager.getConnection(url, userid, passwd);
+
+			pstmt = con.prepareStatement(GET_ALL_USERS_STMT);
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+				UserVO userVO = new UserVO();
+				Integer userId = rs.getInt("user_id");
+				String userName = rs.getString("user_name");
+				userVO.setUserId(userId);
+				userVO.setUserName(userName);
+
+				list.add(userVO);
+			}
+
+
+		}catch(Exception e){
+			throw new RuntimeException(e);
+		}finally {
+			if(rs != null) try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			if(pstmt != null) try {
+				pstmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException ignored) {
+				}
+			}
+		}
+		return list;
+	}
+
+	@Override
+	public List<FarmerVO> getAllFarmers() {
+		List<FarmerVO> list = new ArrayList<FarmerVO>();
+
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try {
+			Class.forName(driver);
+			con = DriverManager.getConnection(url, userid, passwd);
+
+			pstmt = con.prepareStatement(GET_ALL_FARMERS_STMT);
+			rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				FarmerVO farmerVO = new FarmerVO();
+				farmerVO.setFarmerId(rs.getInt("farmer_id"));
+				farmerVO.setFarmName(rs.getString("farm_name"));
+
+				list.add(farmerVO);
+			}
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException ignored) {
+				}
+			}
+		}
+		return list;
+	}
 
 	public static void main(String[] args) {
 		BlogJDBCDAO dao = new BlogJDBCDAO();
@@ -315,4 +432,5 @@ public class BlogJDBCDAO implements BlogDAO_interface {
 			System.out.println("======================");
 		}
 	}
+
 }

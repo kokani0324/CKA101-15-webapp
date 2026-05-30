@@ -20,4 +20,9 @@ public interface BlogDAO_interface {
 
 	// 可保留給未來複合查詢使用，例如用 Map 傳入多個查詢條件。
 	// public List<BlogVO> getAll(Map<String, String[]> map);
+
+	//下拉式選單用的
+	public List<UserVO> getAllUsers();
+
+	public List<FarmerVO> getAllFarmers();
 }
