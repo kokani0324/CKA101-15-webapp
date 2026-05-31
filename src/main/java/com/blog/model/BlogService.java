@@ -88,4 +88,12 @@ public class BlogService {
 		return dao.getAllFarmers();
 	}
 
+	public List<BlogTypeVO> getAllBlogTypes() {
+		return dao.getAllBlogTypes();
+	}
+
+	public List<ProductVO> getAllProducts() {
+		return dao.getAllProducts();
+	}
+
 }

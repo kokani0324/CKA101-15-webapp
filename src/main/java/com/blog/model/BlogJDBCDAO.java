@@ -37,6 +37,13 @@ public class BlogJDBCDAO implements BlogDAO_interface {
 	private static final String GET_ALL_FARMERS_STMT =
 			"SELECT farmer_id, farm_name FROM farmer ORDER BY farmer_id";
 
+	private static final String GET_ALL_BLOGTYPE_STMT =
+			"SELECT blog_type_id, blog_type_name FROM blog_type ORDER BY blog_type_id";
+
+	private static final String GET_ALL_PRODUCT_STMT =
+			"SELECT product_id, description FROM product_detail ORDER BY product_id";
+
+
 
 	@Override
 	public void insert(BlogVO blogVO) {
@@ -207,8 +214,8 @@ public class BlogJDBCDAO implements BlogDAO_interface {
 
 				blogVO.setBlogId(rs.getInt("blog_id"));
 				blogVO.setBlogTitle(rs.getString("blog_title"));
-				blogVO.setUserId(rs.getInt("user_id"));
-				blogVO.setFarmerId(rs.getInt("farmer_id"));
+				blogVO.setUserId(getNullableInteger(rs, "user_id"));
+				blogVO.setFarmerId(getNullableInteger(rs, "farmer_id"));
 				blogVO.setBlogTypeId(rs.getInt("blog_type_id"));
 				blogVO.setProductId(rs.getInt("product_id"));
 				blogVO.setBlogContent(rs.getString("blog_content"));
@@ -270,8 +277,8 @@ public class BlogJDBCDAO implements BlogDAO_interface {
 
 				blogVO.setBlogId(rs.getInt("blog_id"));
 				blogVO.setBlogTitle(rs.getString("blog_title"));
-				blogVO.setUserId(rs.getInt("user_id"));
-				blogVO.setFarmerId(rs.getInt("farmer_id"));
+				blogVO.setUserId(getNullableInteger(rs, "user_id"));
+				blogVO.setFarmerId(getNullableInteger(rs, "farmer_id"));
 				blogVO.setBlogTypeId(rs.getInt("blog_type_id"));
 				blogVO.setProductId(rs.getInt("product_id"));
 				blogVO.setBlogContent(rs.getString("blog_content"));
@@ -409,6 +416,113 @@ public class BlogJDBCDAO implements BlogDAO_interface {
 			}
 		}
 		return list;
+	}
+	@Override
+	public List<BlogTypeVO> getAllBlogTypes() {
+		List<BlogTypeVO> list = new ArrayList<BlogTypeVO>();
+
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try {
+			Class.forName(driver);
+			con = DriverManager.getConnection(url, userid, passwd);
+
+			pstmt = con.prepareStatement(GET_ALL_BLOGTYPE_STMT);
+			rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				BlogTypeVO blogTypeVO = new BlogTypeVO();
+				blogTypeVO.setBlogTypeId(rs.getInt("blog_type_id"));
+				blogTypeVO.setBlogTypeName(rs.getString("blog_type_name"));
+
+				list.add(blogTypeVO);
+			}
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException ignored) {
+				}
+			}
+		}
+		return list;
+	}
+
+	@Override
+	public List<ProductVO> getAllProducts() {
+		List<ProductVO> list = new ArrayList<ProductVO>();
+
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try {
+			Class.forName(driver);
+			con = DriverManager.getConnection(url, userid, passwd);
+
+			pstmt = con.prepareStatement(GET_ALL_PRODUCT_STMT);
+			rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				ProductVO productVO = new ProductVO();
+				productVO.setProductId(rs.getInt("product_id"));
+				productVO.setDescription(rs.getString("description"));
+
+				list.add(productVO);
+			}
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException ignored) {
+				}
+			}
+		}
+		return list;
+	}
+
+	private Integer getNullableInteger(ResultSet rs, String columnName) throws SQLException {
+		int value = rs.getInt(columnName);
+		if (rs.wasNull()) {
+			return null;
+		}
+		return value;
 	}
 
 	public static void main(String[] args) {

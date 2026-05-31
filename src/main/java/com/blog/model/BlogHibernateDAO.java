@@ -102,6 +102,16 @@ public class BlogHibernateDAO implements BlogDAO_interface {
 		return new BlogJDBCDAO().getAllFarmers();
 	}
 
+	@Override
+	public List<BlogTypeVO> getAllBlogTypes() {
+		return new BlogJDBCDAO().getAllBlogTypes();
+	}
+
+	@Override
+	public List<ProductVO> getAllProducts() {
+		return new BlogJDBCDAO().getAllProducts();
+	}
+
 	public static void main(String[] args) {
 		BlogHibernateDAO dao = new BlogHibernateDAO();
 

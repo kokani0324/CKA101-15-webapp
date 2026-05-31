@@ -25,4 +25,8 @@ public interface BlogDAO_interface {
 	public List<UserVO> getAllUsers();
 
 	public List<FarmerVO> getAllFarmers();
+
+	public List<BlogTypeVO> getAllBlogTypes();
+
+	public List<ProductVO> getAllProducts();
 }
