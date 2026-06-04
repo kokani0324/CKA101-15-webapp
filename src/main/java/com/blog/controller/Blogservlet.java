@@ -20,19 +20,19 @@ public class Blogservlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String MSG_BLOG_ID_REQUIRED = "\u8acb\u8f38\u5165 Blog \u7de8\u865f";
-	private static final String MSG_BLOG_NOT_FOUND = "\u67e5\u7121\u6b64 Blog \u7de8\u865f\uff1a";
-	private static final String MSG_TITLE_REQUIRED = "\u6a19\u984c\u8acb\u52ff\u7a7a\u767d";
-	private static final String MSG_CONTENT_REQUIRED = "\u6587\u7ae0\u5167\u5bb9\u8acb\u52ff\u7a7a\u767d";
-	private static final String MSG_STATUS_REQUIRED = "\u6587\u7ae0\u72c0\u614b\u8acb\u52ff\u7a7a\u767d";
-	private static final String MSG_USER_ID_FORMAT = "\u6703\u54e1\u7de8\u865f\u683c\u5f0f\u932f\u8aa4";
-	private static final String MSG_FARMER_ID_FORMAT = "\u5c0f\u8fb2\u7de8\u865f\u683c\u5f0f\u932f\u8aa4";
-	private static final String MSG_OWNER_REQUIRED = "\u6703\u54e1\u548c\u5c0f\u8fb2\u4e0d\u80fd\u540c\u6642\u7a7a\u767d";
-	private static final String MSG_BLOG_TYPE_REQUIRED = "\u8acb\u8f38\u5165\u6587\u7ae0\u5206\u985e\u7de8\u865f";
-	private static final String MSG_PRODUCT_REQUIRED = "\u8acb\u8f38\u5165\u5546\u54c1\u7de8\u865f";
-	private static final String MSG_NUMBER_REQUIRED = "\uff0c\u8acb\u8f38\u5165\u6578\u5b57";
-	private static final String MSG_INSERT_FAILED = "\u65b0\u589e\u5931\u6557\uff1a\u8acb\u78ba\u8a8d\u6703\u54e1\u3001\u5c0f\u8fb2\u3001\u6587\u7ae0\u5206\u985e\u8207\u5546\u54c1\u7de8\u865f\u662f\u5426\u5b58\u5728";
-	private static final String MSG_UPDATE_FAILED = "\u4fee\u6539\u5931\u6557\uff1a\u8acb\u78ba\u8a8d\u6703\u54e1\u3001\u5c0f\u8fb2\u3001\u6587\u7ae0\u5206\u985e\u8207\u5546\u54c1\u7de8\u865f\u662f\u5426\u5b58\u5728";
+	private static final String MSG_BLOG_ID_REQUIRED = "請輸入 Blog 編號";
+	private static final String MSG_BLOG_NOT_FOUND = "查無此 Blog 編號：";
+	private static final String MSG_TITLE_REQUIRED = "標題請勿空白";
+	private static final String MSG_CONTENT_REQUIRED = "文章內容請勿空白";
+	private static final String MSG_STATUS_REQUIRED = "文章狀態請勿空白";
+	private static final String MSG_USER_ID_FORMAT = "會員編號格式錯誤";
+	private static final String MSG_FARMER_ID_FORMAT = "小農編號格式錯誤";
+	private static final String MSG_OWNER_REQUIRED = "會員和小農不能同時空白";
+	private static final String MSG_BLOG_TYPE_REQUIRED = "請輸入文章分類編號";
+	private static final String MSG_PRODUCT_REQUIRED = "請輸入商品編號";
+	private static final String MSG_NUMBER_REQUIRED = "，請輸入數字";
+	private static final String MSG_INSERT_FAILED = "新增失敗：請確認會員、小農、文章分類與商品編號是否存在";
+	private static final String MSG_UPDATE_FAILED = "修改失敗：請確認會員、小農、文章分類與商品編號是否存在";
 
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse res)
