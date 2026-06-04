@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,7 +18,6 @@ public class BlogVO implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	// 文章主鍵，由資料庫自動遞增產生。
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "blog_id", updatable = false)
@@ -25,7 +26,6 @@ public class BlogVO implements java.io.Serializable {
 	@Column(name = "blog_title")
 	private String blogTitle;
 
-	// 會員文章可使用 userId；農夫日誌可搭配 farmerId 使用。
 	@Column(name = "user_id")
 	private Integer userId;
 
@@ -41,7 +41,6 @@ public class BlogVO implements java.io.Serializable {
 	@Column(name = "blog_content")
 	private String blogContent;
 
-	// 圖片以 BLOB 形式存進資料庫，Servlet 讀出後直接輸出成 image/jpeg。
 	@Lob
 	@Column(name = "blog_img")
 	private byte[] blogImg;
@@ -52,8 +51,9 @@ public class BlogVO implements java.io.Serializable {
 	@Column(name = "blog_time")
 	private Timestamp blogTime;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "blog_status")
-	private String blogStatus;
+	private BlogStatus blogStatus;
 
 	public BlogVO() {
 		super();
@@ -139,11 +139,11 @@ public class BlogVO implements java.io.Serializable {
 		this.blogTime = blogTime;
 	}
 
-	public String getBlogStatus() {
+	public BlogStatus getBlogStatus() {
 		return blogStatus;
 	}
 
-	public void setBlogStatus(String blogStatus) {
+	public void setBlogStatus(BlogStatus blogStatus) {
 		this.blogStatus = blogStatus;
 	}
 }

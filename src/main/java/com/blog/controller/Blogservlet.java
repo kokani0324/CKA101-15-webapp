@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.blog.model.BlogService;
+import com.blog.model.BlogStatus;
 import com.blog.model.BlogVO;
 
 import jakarta.servlet.RequestDispatcher;
@@ -21,15 +22,15 @@ public class Blogservlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private static final String MSG_BLOG_ID_REQUIRED = "請輸入 Blog 編號";
-	private static final String MSG_BLOG_NOT_FOUND = "查無此 Blog 編號：";
+	private static final String MSG_BLOG_NOT_FOUND = "查無 Blog 編號：";
 	private static final String MSG_TITLE_REQUIRED = "標題請勿空白";
 	private static final String MSG_CONTENT_REQUIRED = "文章內容請勿空白";
-	private static final String MSG_STATUS_REQUIRED = "文章狀態請勿空白";
+	private static final String MSG_STATUS_REQUIRED = "文章狀態請選擇 VISIBLE 或 HIDDEN";
 	private static final String MSG_USER_ID_FORMAT = "會員編號格式錯誤";
 	private static final String MSG_FARMER_ID_FORMAT = "小農編號格式錯誤";
 	private static final String MSG_OWNER_REQUIRED = "會員和小農不能同時空白";
-	private static final String MSG_BLOG_TYPE_REQUIRED = "請輸入文章分類編號";
-	private static final String MSG_PRODUCT_REQUIRED = "請輸入商品編號";
+	private static final String MSG_BLOG_TYPE_REQUIRED = "請選擇文章分類";
+	private static final String MSG_PRODUCT_REQUIRED = "請選擇商品";
 	private static final String MSG_NUMBER_REQUIRED = "，請輸入數字";
 	private static final String MSG_INSERT_FAILED = "新增失敗：請確認會員、小農、文章分類與商品編號是否存在";
 	private static final String MSG_UPDATE_FAILED = "修改失敗：請確認會員、小農、文章分類與商品編號是否存在";
@@ -129,7 +130,7 @@ public class Blogservlet extends HttpServlet {
 			BlogService blogSvc = new BlogService();
 			byte[] blogImg = getImageBytes(req, "blog_img");
 
-			if (blogImg == null) {
+			if (blogImg == null && blogVO.getBlogId() != null) {
 				BlogVO oldBlogVO = blogSvc.getOneBlog(blogVO.getBlogId());
 				if (oldBlogVO != null) {
 					blogImg = oldBlogVO.getBlogImg();
@@ -228,16 +229,13 @@ public class Blogservlet extends HttpServlet {
 
 		String blogTitle = trim(req.getParameter("blog_title"));
 		String blogContent = trim(req.getParameter("blog_content"));
-		String blogStatus = trim(req.getParameter("blog_status"));
+		BlogStatus blogStatus = parseBlogStatus(req.getParameter("blog_status"), errorMsgs);
 
 		if (blogTitle.length() == 0) {
 			errorMsgs.add(MSG_TITLE_REQUIRED);
 		}
 		if (blogContent.length() == 0) {
 			errorMsgs.add(MSG_CONTENT_REQUIRED);
-		}
-		if (blogStatus.length() == 0) {
-			errorMsgs.add(MSG_STATUS_REQUIRED);
 		}
 
 		blogVO.setBlogTitle(blogTitle);
@@ -252,6 +250,21 @@ public class Blogservlet extends HttpServlet {
 		blogVO.setProductId(parseRequiredInteger(req.getParameter("product_id"), MSG_PRODUCT_REQUIRED, errorMsgs));
 
 		return blogVO;
+	}
+
+	private BlogStatus parseBlogStatus(String value, List<String> errorMsgs) {
+		String trimmedValue = trim(value);
+		if (trimmedValue.length() == 0) {
+			errorMsgs.add(MSG_STATUS_REQUIRED);
+			return null;
+		}
+
+		try {
+			return BlogStatus.valueOf(trimmedValue);
+		} catch (IllegalArgumentException e) {
+			errorMsgs.add(MSG_STATUS_REQUIRED);
+			return null;
+		}
 	}
 
 	private Integer parseRequiredInteger(String value, String blankMessage, List<String> errorMsgs) {

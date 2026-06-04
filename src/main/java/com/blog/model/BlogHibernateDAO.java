@@ -22,9 +22,7 @@ public class BlogHibernateDAO implements BlogDAO_interface {
 
 		try (Session session = factory.openSession()) {
 			tx = session.beginTransaction();
-
 			session.persist(blogVO);
-
 			tx.commit();
 		} catch (RuntimeException e) {
 			if (tx != null) {
@@ -40,11 +38,7 @@ public class BlogHibernateDAO implements BlogDAO_interface {
 
 		try (Session session = factory.openSession()) {
 			tx = session.beginTransaction();
-
-			// merge() 適合處理從 Servlet/Service 傳來的 detached object，
-			// Hibernate 會依 blogId 判斷要更新既有資料。
 			session.merge(blogVO);
-
 			tx.commit();
 		} catch (RuntimeException e) {
 			if (tx != null) {
@@ -60,8 +54,6 @@ public class BlogHibernateDAO implements BlogDAO_interface {
 
 		try (Session session = factory.openSession()) {
 			tx = session.beginTransaction();
-
-			// 先查出 Entity，再交給 Hibernate 刪除，避免刪除不存在資料時拋出不必要錯誤。
 			BlogVO blogVO = session.get(BlogVO.class, blogId);
 
 			if (blogVO != null) {
@@ -114,8 +106,6 @@ public class BlogHibernateDAO implements BlogDAO_interface {
 
 	public static void main(String[] args) {
 		BlogHibernateDAO dao = new BlogHibernateDAO();
-
-		// 簡易測試：查詢全部文章並印出欄位內容。
 		List<BlogVO> list = dao.getAll();
 
 		for (BlogVO blogVO : list) {
